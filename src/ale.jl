@@ -19,6 +19,3 @@ function playgame(game)
     action = println(si, "3,18,1,1")
   end
 end
-
-
-playgame(space_invaders)

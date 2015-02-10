@@ -3,8 +3,17 @@
 # outputs Rsa and a state s?, where s? is randomly drawn according to the
 #transition probabilities Psa(·).
 
-immutable Model
-  dada
+abstract Model
+
+# A cheating model has access to a perfect model of the actual MDP
+immutable CheatModel <: Model
+  m::MDP
+  CheatModel(m) = new(deepcopy(m))
 end
 
-call(m::,s::State, a::Action)
+function rand(mdp::CheatModel,s,a)
+  mdp.m.pos = s
+  res = act!(mdp.m,a)
+#   @show a,res
+  res
+end
