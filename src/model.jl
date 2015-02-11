@@ -17,3 +17,12 @@ function rand(mdp::CheatModel,s,a)
 #   @show a,res
   res
 end
+
+function call(mdp::CheatModel,s,a)
+  @show "gotcha"
+  mdp.m.pos = s
+  @show "gothere"
+  q = act(mdp.m,a)
+  @show q
+  q
+end

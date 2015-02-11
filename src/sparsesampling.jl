@@ -1,7 +1,7 @@
 ## Vanilla Sparse Sampling
 ## =======================
 
-# Do sparse sampling with model
+# Vanilla Sparse Sampling
 function ss{M<:MDP}(depth, nsamples, γ, model::Model, mdp::M, s0)
   options::Vector = estimate_q(depth, nsamples, γ, model, mdp, s0)
   m,i = findmax(options) # TODO: WHat if there are many maxes
@@ -17,7 +17,6 @@ function estimate_q(depth, nsamples, γ, model::Model, mdp, state)
   all_actions = actions(mdp,state)
   Qs = Float64[]
   for a in all_actions
-#     println("Depth: $depth - action $a")
     states_rewards = [rand(model, state, a) for i = 1:nsamples]
     reward = γ/nsamples * sum([sr[2] for sr in states_rewards])
     v_values = [estimate_v(depth - 1, nsamples, γ, model, mdp, state)]
