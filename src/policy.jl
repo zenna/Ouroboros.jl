@@ -1,6 +1,7 @@
 ## Combinatorial Stochastic Gradient Descent
 ## +========================================
 using Distributions
+import Sigma: rand_select
 
 function hillclimb(s,transforms::Vector,score::Function;
                     niters = 10, maximize = True)
@@ -15,10 +16,16 @@ function hillclimb(s,transforms::Vector,score::Function;
 end
 
 function learn{T<:MDP}(gen_mdp::Function, MDPType::Type{T})
-  action = action_ts(MDPType) # Get an action typed expression
-  state_transforms = state(MDPType)
+  s0 = empty_lambda(MDPType) #Creates an empty policy of right type
   score(policy) = (mdp = gen_mdp(); s0 = init!(mdp); play(mdp,s0))
   hillclimb(s0,primtransforms,score)
+end
+
+function empty_lambda{T<:MDP}(MDPType::Type{T})
+  actionfunc::PrimFunc = action_ts(MDPType)
+  missing_args = [Missing{M}() for M in actionfunc.argtypes]
+  ts = TypedSExpr(actionfunc,missing_args)
+  Lambda([Var(:state,state_type(MDPType))],ts)
 end
 
 function play(m::MDP,s0 ; niters = 10)
@@ -44,6 +51,8 @@ function gen2drast()
 end
 
 gw_act(args...) = (@assert validmove([args...]);[args...])
-action_ts{N}(::Type{GridWorld{N}}) = PrimFunc(:gw_act,[Missing{Int} for i = 1:N],Vector{Int})
-state{N}(::Type{GridWorld{N}}) =
-learn(gen2drast, GridWorld{2})
+action_ts{N}(::Type{GridWorld{N}}) = PrimFunc(:gw_act,[Int for i = 1:N],Vector{Int})
+state_type{N}(::Type{GridWorld{N}}) = Vector{Int}
+l = learn(gen2drast, GridWorld{2})
+l.body
+Sigma.rand_select
