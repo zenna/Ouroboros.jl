@@ -1,28 +1,62 @@
 ## Programs
 ## ========
 
+# A primitive
 immutable PrimFunc
   name::Symbol
   argtypes::Vector{DataType}
   rettype::DataType
 end
 
-type Lambda
-  vars::Vector{Var}
-  body::TypedSExpr
-  λ::Function
+# A Variable for use in Lambdas
+type Var
+  name::Symbol
+  typ::DataType
 end
+valuetype(v::Var) = v.typ
+expr(x::Var) = x.name
 
+# An a Typed SExpression
 type TypedSExpr
   head::PrimFunc
   args::Vector
-  function TypedSExpr(h,args)
+  function TypedSExpr(h,args::Vector)
     # Type check
     @assert all([valuetype(args[i]) == h.argtypes[i] for i = 1:length(args)])
     new(h,args)
   end
 end
 
+# A Function, which can be compiled int a Julia function and called
+type Lambda
+  vars::Vector{Var}
+  body::TypedSExpr
+  compiled::Bool
+  executable::Function
+  Lambda(vars::Vector{Var},body::TypedSExpr) = new(vars,body,false)
+  Lambda(vars,body,compiled,executable) = new(vars,body,compiled,executable)
+end
+
+# Return Julia Expr of Lambda
+function expr(λ::Lambda)
+  args_tuple = Expr(:tuple,[Expr(:(::),v.name,v.typ) for v in λ.vars]...)
+  Expr(:(->),args_tuple,expr(λ.body))
+end
+
+# Compile to executable fnuction
+function compile!(λ)
+  if !λ.compiled λ.executable = eval(expr(λ)) end
+  λ.compiled = true
+  λ
+end
+
+# Call the function with args
+function call(λ::Lambda, args...)
+  compile!(λ)
+  λ.executable(args...)
+end
+
+# Set the ith argument of ts to y (and type check)
 set(ts::TypedSExpr, i, y) =
   (@assert valuetype(y) == ts.h.argtypes[i]; ts.args[i] = y)
 
@@ -34,15 +68,6 @@ valuetype(x::TypedSExpr) = valuetype(x.head)
 immutable Loc
   route::Vector{Int}
 end
-
-# function find(ts::TypedSExpr, l::loc)
-#   isempty(l) && return ts # Root location
-#   child = ts
-#   for i = 1:length(l.route)
-#     child = child.args[l[i]]
-#   end
-#   return child
-# end
 
 # An SExpr may have missing children, but they must be typed, right!
 immutable Missing{T} end
@@ -100,10 +125,10 @@ rootprim = PrimFunc(:root, [TypedSExpr], Loc)
 ## Compilation
 ## ===========
 # Compile an sexpression into an executable lambda
-compile(a) = a
-compile(a::Missing) = error("cannot compile with missing values")
-function compile(ts::TypedSExpr)
-  Expr(:call, ts.head.name, [compile(a) for a in ts.args]...)
+expr(a) = a
+expr(a::Missing) = error("cannot compile with missing values")
+function expr(ts::TypedSExpr)
+  Expr(:call, ts.head.name, [expr(a) for a in ts.args]...)
 end
 
 
@@ -112,6 +137,8 @@ end
 
 # ## Example
 # ## =======
-c = TypedSExpr(plus,[Missing{Int}(),2])
+xvar = Var(:x, Int)
+c = TypedSExpr(plus,[4,xvar])
+l = Lambda([xvar],c)
 a = TypedSExpr(plus,[1,2])
 b = TypedSExpr(minus,[a,a])
