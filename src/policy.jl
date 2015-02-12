@@ -1,17 +1,18 @@
-## Combinatorial Stochastic Gradient Descent
-## +========================================
-using Distributions
-import Sigma: rand_select
+## Policy Learning
+## ========================================
 
 # Nudge Values so they're valid Dirichlet parameters
 nudge(v::Vector{Float64};ϵ = 1E-1) = v-minimum(v) + ϵ
 
+# Combinatorial Stochastic Gradient Descent
 function hillclimb(state,transforms::Vector,score::Function;
                     niters = 10, maximize = true, nhood = 3)
   for i = 1:niters
     @show i, state
     transforms = [rand_select(transforms) for i = 1:nhood]
-    states = Any[state]
+    states = Any[state] # May want to stay in current state
+
+    # Try A bunch of program transformations to policy
     for transform in transforms
       try # Transform might fail
         s = call(transform, state)
@@ -23,27 +24,31 @@ function hillclimb(state,transforms::Vector,score::Function;
 
     isempty(states) && continue
     scores = Float64[score(s_) for s_ in states]
+    # play returns -Inf when exception thrown
+    # replace these values with the minimum values of everything else
     @show scores
-    j = rand(Categorical(rand(Dirichlet(nudge(scores)))))
-    state = states[j]
-    print("\n")
+    if all(isinf,scores) # All policies failed worked so just choose uniformly
+      scores = zeros(length(scores))
+    else
+      minscore = minimum(filter(sc->!isinf(sc),scores))
+      scores = [score == -Inf ? minscore : score for score in scores]
+      @show scores
+      j = rand(Categorical(rand(Dirichlet(nudge(scores)))))
+      state = states[j]
+      print("\n")
+    end
   end
   state
 end
 
+# Learn a policy using hill climbing
 function learn{T<:MDP}(gen_mdp::Function, primtransforms::Vector, MDPType::Type{T})
   s0 = empty_lambda(MDPType) #Creates an empty policy of right type
   score(policy) = (mdp = gen_mdp(); s0 = init!(mdp); sum(play(mdp,s0,policy)))
   hillclimb(s0,primtransforms,score)
 end
 
-function empty_lambda{T<:MDP}(MDPType::Type{T})
-  actionfunc::PrimFunc = action_ts(MDPType)
-  missing_args = Any[Missing{M}() for M in actionfunc.argtypes]
-  ts = TypedSExpr(actionfunc,missing_args)
-  Lambda([Var(:state,state_type(MDPType))],ts)
-end
-
+# Play an MDP with a policy
 function play{T<:MDP}(mdp::T,s,policy; niters = 10)
   i = 1
   rewards = Float64[]
@@ -54,7 +59,9 @@ function play{T<:MDP}(mdp::T,s,policy; niters = 10)
       push!(rewards,reward)
     catch e
       @show e
-      push!(rewards,0.0)
+      # If you fail, do a no_action
+      state,reward = act!(mdp, no_action(T))
+      push!(rewards,reward)
     end
     i += 1
   end
@@ -78,6 +85,7 @@ end
 gw_act(args...) = [args...]
 action_ts{N}(::Type{GridWorld{N}}) = PrimFunc(:gw_act,[Int for i = 1:N],Vector{Int})
 state_type{N}(::Type{GridWorld{N}}) = Vector{Int}
+no_action{N}(::Type{GridWorld{N}}) = zeros(Int,N)
 
 allprimtransforms = [randfillcmplx]
 l = learn(gen2drast, allprimtransforms, GridWorld{2})

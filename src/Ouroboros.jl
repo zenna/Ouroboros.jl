@@ -8,6 +8,7 @@ using Gadfly
 import Base: print, rand
 import Gadfly: layer
 import Sigma:call
+import Sigma: rand_select
 
 include("MDP.jl")
 include("model.jl")
