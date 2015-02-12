@@ -15,7 +15,9 @@ include("model.jl")
 include("sparsesampling.jl")
 include("landscapes.jl")
 include("lambda.jl")
+include("primitives.jl")
 include("transforms.jl")
+include("complex.jl")
 include("policy.jl")
 
 end

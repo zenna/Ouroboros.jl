@@ -16,13 +16,16 @@ end
 valuetype(v::Var) = v.typ
 expr(x::Var) = x.name
 
+typecheck(T1::DataType, T2::DataType) = (T1 == Any) || (T2 == Any) || (T1 == T2)
+
 # An a Typed SExpression
 type TypedSExpr
   head::PrimFunc
   args::Vector{Any}
   function TypedSExpr(h,args::Vector)
     # Type check
-    @assert all([valuetype(args[i]) == h.argtypes[i] for i = 1:length(args)])
+    @assert(all([typecheck(valuetype(args[i]),h.argtypes[i]) for i = 1:length(args)]),
+            [(valuetype(args[i]),h.argtypes[i]) for i = 1:length(args)])
     new(h,args)
   end
 end
@@ -77,14 +80,8 @@ valuetype{T}(x::Missing{T}) = T
 ismissing(x) = isa(x, Missing)
 nmissing(x::TypedSExpr) = count(a->ismissing(a),x.args)
 
-## Primitive Functions
-## ==================
-
-# Integer Primitives
-plus = PrimFunc(:+,[Int, Int],Int)
-minus = PrimFunc(:-,[Int, Int],Int)
-times = PrimFunc(:*,[Int, Int], Int)
-arithprims = [plus,minus,times]
+# Create from a primitive type an SExpr of appropriate type with all kids missing
+childless(p::PrimFunc) = TypedSExpr(p,[Missing{T}() for T in p.argtypes])
 
 # SExprPrimitives
 # recursively walk over ts and return node ids where p(node) is true
@@ -116,15 +113,3 @@ expr(a::Missing) = error("cannot compile with missing values")
 function expr(ts::TypedSExpr)
   Expr(:call, ts.head.name, [expr(a) for a in ts.args]...)
 end
-
-
-## TODO
-## ====
-
-# ## Example
-# ## =======
-xvar = Var(:x, Int)
-c = TypedSExpr(plus,[4,xvar])
-l = Lambda([xvar],c)
-a = TypedSExpr(plus,[1,2])
-b = TypedSExpr(minus,[a,a])
