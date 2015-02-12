@@ -57,8 +57,10 @@ function call(λ::Lambda, args...)
 end
 
 # Set the ith argument of ts to y (and type check)
-set(ts::TypedSExpr, i, y) =
-  (@assert valuetype(y) == ts.h.argtypes[i]; ts.args[i] = y)
+function set(ts::TypedSExpr, i, y)
+  @assert valuetype(y) == ts.head.argtypes[i] "$(valuetype(y)) != $(ts.head.argtypes[i])"
+  ts.args[i] = y
+end
 
 # Value typeof a value is just its value but for a func its its return type
 valuetype(x) = typeof(x)
@@ -100,24 +102,7 @@ function walk(p::Function, ts::TypedSExpr)
   locs
 end
 
-# Missing
-missing(ts::TypedSExpr,t::DataType) = walk(n->valuetype(n)==t && ismissing(n),ts)
-# Maps an TypedSExpr to the id of all the missing nodes
-missingprim = PrimFunc(:missing,[TypedSExpr, DataType], Vector{Loc})
 
-# Edit: replace position l in loc with y
-function editnode(ts::TypedSExpr, l::Loc, y)
-  newts = deepcopy(ts)
-  now = newts
-  for i in l.route[1:end-1]
-    now = now.args[i]
-  end
-  @assert isa(now, TypedSExpr)
-  set(now,l,y)
-  newts
-end
-
-editnodeprim = PrimFunc(:editnode, [TypedSExpr, Loc, Any], TypedSExpr)
 
 root(ts::TypedSExpr) = Loc([])
 rootprim = PrimFunc(:root, [TypedSExpr], Loc)

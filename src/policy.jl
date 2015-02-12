@@ -23,7 +23,7 @@ end
 
 function empty_lambda{T<:MDP}(MDPType::Type{T})
   actionfunc::PrimFunc = action_ts(MDPType)
-  missing_args = [Missing{M}() for M in actionfunc.argtypes]
+  missing_args = Any[Missing{M}() for M in actionfunc.argtypes]
   ts = TypedSExpr(actionfunc,missing_args)
   Lambda([Var(:state,state_type(MDPType))],ts)
 end
@@ -54,5 +54,10 @@ gw_act(args...) = (@assert validmove([args...]);[args...])
 action_ts{N}(::Type{GridWorld{N}}) = PrimFunc(:gw_act,[Int for i = 1:N],Vector{Int})
 state_type{N}(::Type{GridWorld{N}}) = Vector{Int}
 l = learn(gen2drast, GridWorld{2})
-l.body
-Sigma.rand_select
+
+q = empty_lambda(GridWorld{2})
+@assert false 4,3
+
+q.body
+set(q.body,1,1)
+call(randfillcmplx, q)
