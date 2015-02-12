@@ -19,7 +19,7 @@ function validpos(pos::LA{Int,1}, mdp::GridWorld)
   # Pos is not in one of the obstacles
   notinob = true
   for i = 1:size(mdp.obstacles)[2]
-    notinob &= !(pos == obstacles[:,i])
+    notinob &= !(pos == mdp.obstacles[:,i])
   end
   onboard & notinob
 end

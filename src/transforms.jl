@@ -11,6 +11,10 @@ missingprim = PrimFunc(:missing,[TypedSExpr, DataType], Vector{Loc})
 body(λ::Lambda) = λ.body
 bodyprim = PrimFunc(:body, [Lambda], TypedSExpr)
 
+#
+vars(λ::Lambda) = λ.vars
+varsprim = PrimFunc(:vars, [Lambda], Vector{Var})
+
 function findnode(ts::TypedSExpr, l::Loc)
   now = ts
   for i in l.route[1:end]
@@ -47,6 +51,9 @@ editnodeprim = PrimFunc(:editnode, [TypedSExpr, Loc, Any], TypedSExpr)
 rand_selectprims = [T => PrimFunc(:rand_select, [Vector{T}], T)
                     for T in (Int, Float64, Bool, TypedSExpr, Loc)]
 
+lambarize(vars::Vector{Var}, ts::TypedSExpr) = Lambda(vars,ts)
+lambdaprim = PrimFunc(:Lambda, [Vector{Var},TypedSExpr],Lambda)
+
 ## Complex Program Transforms
 ## ================================
 # Fill in Random Missing Values
@@ -55,4 +62,7 @@ r1 = TypedSExpr(bodyprim,[progvar])
 r2 = TypedSExpr(missingprim, [r1])
 r3 = TypedSExpr(rand_selectprims[Loc],[r2])
 r4 = TypedSExpr(randeditprim, [r1,r3])
-randfillcmplx = Lambda([progvar],r4)
+
+r5 = TypedSExpr(varsprim,[progvar])
+r6 = TypedSExpr(lambdaprim, [r5,r4])
+randfillcmplx = Lambda([progvar],r6)
