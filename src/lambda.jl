@@ -19,7 +19,7 @@ expr(x::Var) = x.name
 # An a Typed SExpression
 type TypedSExpr
   head::PrimFunc
-  args::Vector
+  args::Vector{Any}
   function TypedSExpr(h,args::Vector)
     # Type check
     @assert all([valuetype(args[i]) == h.argtypes[i] for i = 1:length(args)])
@@ -84,6 +84,7 @@ nmissing(x::TypedSExpr) = count(a->ismissing(a),x.args)
 plus = PrimFunc(:+,[Int, Int],Int)
 minus = PrimFunc(:-,[Int, Int],Int)
 times = PrimFunc(:*,[Int, Int], Int)
+arithprims = [plus,minus,times]
 
 # SExprPrimitives
 # recursively walk over ts and return node ids where p(node) is true

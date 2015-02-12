@@ -17,26 +17,17 @@ function hillclimb(state,transforms::Vector,score::Function;
       try # Transform might fail
         s = call(transform, state)
         push!(states,s)
-      catch
+      catch e
+        print("Transform error",e)
         println("Transform Failed")
       end
     end
 
     isempty(states) && continue
     scores = Float64[score(s_) for s_ in states]
-    # play returns -Inf when exception thrown
-    # replace these values with the minimum values of everything else
-    @show scores
-    if all(isinf,scores) # All policies failed worked so just choose uniformly
-      scores = zeros(length(scores))
-    else
-      minscore = minimum(filter(sc->!isinf(sc),scores))
-      scores = [score == -Inf ? minscore : score for score in scores]
-      @show scores
-      j = rand(Categorical(rand(Dirichlet(nudge(scores)))))
-      state = states[j]
-      print("\n")
-    end
+    j = rand(Categorical(rand(Dirichlet(nudge(scores)))))
+    state = states[j]
+    print("\n")
   end
   state
 end
@@ -54,11 +45,17 @@ function play{T<:MDP}(mdp::T,s,policy; niters = 10)
   rewards = Float64[]
   while s != StopState{T} && i < niters
     try
+#       print("\n")
+#       @show policy
+#       @show s
       action = call(policy,s)
+      @show action
+#       @show expr(policy)
       state,reward = act!(mdp, action)
       push!(rewards,reward)
     catch e
       @show e
+      isa(e,MethodError) && rethrow(e)
       # If you fail, do a no_action
       state,reward = act!(mdp, no_action(T))
       push!(rewards,reward)
@@ -82,19 +79,20 @@ end
 
 ## TODO: MOVE TO GRIDWORLD WHEN STABLE
 # gw_act(args...) = (@assert validmove([args...]);[args...])
-gw_act(args...) = [args...]
+gw_act(args...) = Int[args...]
 action_ts{N}(::Type{GridWorld{N}}) = PrimFunc(:gw_act,[Int for i = 1:N],Vector{Int})
 state_type{N}(::Type{GridWorld{N}}) = Vector{Int}
 no_action{N}(::Type{GridWorld{N}}) = zeros(Int,N)
 
-allprimtransforms = [randfillcmplx]
-l = learn(gen2drast, allprimtransforms, GridWorld{2})
-
+allprimtransforms = [randaddf,randfillcmplx]
+bestpolicy = learn(gen2drast, allprimtransforms, GridWorld{2})
 # q = empty_lambda(GridWorld{2})
 # q = call(randfillcmplx, q)
 game = gen2drast()
 s0 = init!(game)
-play(game,s0,q)
-# q2
+play(game,s0,bestpolicy)
 # @show q
 # @show q2
+# applynode(randfprim,Int)
+
+# applynode(randf,Missing{Int}())

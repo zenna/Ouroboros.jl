@@ -14,6 +14,7 @@ include("MDP.jl")
 include("model.jl")
 include("sparsesampling.jl")
 include("landscapes.jl")
+include("lambda.jl")
 include("transforms.jl")
 include("policy.jl")
 
