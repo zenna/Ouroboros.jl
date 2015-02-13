@@ -44,7 +44,7 @@ end
 ## Randomly remove a subtree
 begin
   local n1 = TypedSExpr(bodyprim,[progvar])
-  local n2 = TypedSExpr(missingprim, [n1])
+  local n2 = TypedSExpr(alllocs_norootprim, [n1])
   local n3 = TypedSExpr(rand_selectprims[Loc],[n2])
   local n4 = TypedSExpr(genapplyprim([updatecmplx,progvar,n3,genmissingprim]),
                         [updatecmplx,progvar,n3,genmissingprim])

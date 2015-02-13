@@ -18,6 +18,7 @@ include("lambda.jl")
 include("primitives.jl")
 include("transforms.jl")
 include("complex.jl")
-include("policy.jl")
+include("vis.jl")
+include("learn.jl")
 
 end

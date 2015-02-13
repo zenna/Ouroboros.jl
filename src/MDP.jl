@@ -3,6 +3,7 @@
 # And reurns some new state S
 abstract MDP
 immutable StopState{T} end
+immutable StartState{T} end
 
 # From an MDP create an empty Program which maps to actions in that MDP
 # And takes as input the state type of that MDP

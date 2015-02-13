@@ -6,6 +6,10 @@ type GridWorld{N} <: MDP
   obstacles::Matrix{Int}
 end
 
+randinit!{N}(gw::GridWorld{N}) =
+  [rand(DiscreteUniform(gw.board[1,i],gw.board[2,i])) for i = 1:N]
+
+randinit!{N}(gw::GridWorld{N}) = (gw.pos = vec(gw.board[1,:]'); gw.pos)
 init!{N}(gw::GridWorld{N}) = (gw.pos = vec(gw.board[1,:]'); gw.pos)
 
 # Is this a valid position
@@ -59,4 +63,15 @@ function layer(mdp::GridWorld)
        x = mdp.board[1,1]:mdp.board[2,1],
        y = mdp.board[1,2]:mdp.board[2,2],
        Geom.contour)
+end
+
+## Generators
+function gen2drand()
+  tenboard = [0   0
+            100 100]
+  noobs = Array(Int,0,0)
+  obstacles = [-3 -3 -3 -3 -3 -3
+             -5 -4 -3 -2 -1 0]
+  landscape = rand_select([rastrigin,sphere,beale])
+  GridWorld{2}(tenboard, [0,0], x->1-landscape(x), noobs)
 end

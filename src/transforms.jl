@@ -9,6 +9,12 @@ missingprim = PrimFunc(:missing,[TypedSExpr], Vector{Loc})
 missingtypedprim = PrimFunc(:missing, [TypedSExpr,DataType], Vector{Loc})
 genmissingprim = PrimFunc(:genmissing,[Any],Any)
 
+# Get all locations
+alllocs(ts::TypedSExpr) = walk(n->true, ts)
+alllocs_noroot(ts::TypedSExpr) = walk(n->n!=ts,ts) # all except root
+alllocsprim = PrimFunc(:alllocs, [TypedSExpr], Vector{Loc})
+alllocs_norootprim = PrimFunc(:alllocs_noroot, [TypedSExpr], Vector{Loc})
+
 
 # Get the TypedSExpr from a lambda
 body(λ::Lambda) = λ.body

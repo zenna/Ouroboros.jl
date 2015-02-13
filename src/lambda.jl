@@ -90,6 +90,8 @@ function walk(p::Function, ts::TypedSExpr)
   tovisit = Array((Vector{Int},Any),0); push!(tovisit,(Int[],ts))
   while !isempty(tovisit) # Depth First Search
     loc, now = shift!(tovisit)
+#     @show now
+#     @show p(now)
     p(now) && push!(locs, Loc(loc))
     if isa(now, TypedSExpr)
        # Number args for loc tracking
