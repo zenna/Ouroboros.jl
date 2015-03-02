@@ -12,6 +12,11 @@ randinit!{N}(gw::GridWorld{N}) =
 randinit!{N}(gw::GridWorld{N}) = (gw.pos = vec(gw.board[1,:]'); gw.pos)
 init!{N}(gw::GridWorld{N}) = (gw.pos = vec(gw.board[1,:]'); gw.pos)
 
+gw_act(args...) = Int[args...] # Maybe easier for program to gen integer input
+action_ts{N}(::Type{GridWorld{N}}) = PrimFunc(:gw_act,[Int for i = 1:N],Vector{Int})
+state_type{N}(::Type{GridWorld{N}}) = Vector{Int}
+no_action{N}(::Type{GridWorld{N}}) = zeros(Int,N)
+
 # Is this a valid position
 function validpos(pos::LA{Int,1}, mdp::GridWorld)
   # Pos is on board
@@ -74,4 +79,13 @@ function gen2drand()
              -5 -4 -3 -2 -1 0]
   landscape = rand_select([rastrigin,sphere,beale])
   GridWorld{2}(tenboard, [0,0], x->1-landscape(x), noobs)
+end
+
+function gen2drast()
+  tenboard = [0 0
+            10 10]
+  noobs = Array(Int,0,0)
+  obstacles = [-3 -3 -3 -3 -3 -3
+             -5 -4 -3 -2 -1 0]
+  GridWorld{2}(tenboard-5, [0,0], x->1-rastrigin(x), obstacles)
 end

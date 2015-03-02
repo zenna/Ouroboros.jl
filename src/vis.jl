@@ -3,7 +3,7 @@ using Compose
 import Compose: LCHab
 
 ## Visualise a program Stolen from compose.jl
-function showme(root::TypedSExpr;font_size=Compose.default_font_size)
+function vistree(root::TypedSExpr;font_size=Compose.default_font_size)
     positions = Dict{Any, (Float64, Float64)}()
     level_count = Int[]
     max_level = 0
@@ -96,4 +96,4 @@ function showme(root::TypedSExpr;font_size=Compose.default_font_size)
                     lines_ctx, figs)
 end
 
-showme(l::Lambda) = showme(l.body)
+vistree(l::Lambda) = vistree(l.body)

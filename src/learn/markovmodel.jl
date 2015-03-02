@@ -150,8 +150,6 @@ function assessMM{T<:MDP}(gen_mdp::Function, mm::MarkovModel{Lambda},
 end
 
 
-
-
 act!(gen2drand(),[0,1])
 
 ## Example

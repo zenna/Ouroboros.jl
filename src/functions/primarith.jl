@@ -1,6 +1,14 @@
+## Primtive arithmetic (etc) functions used within a learned program
+## ===========================================================
+
+valuetype(x::PrimFunc) = x.rettype
+# Create from a primitive type an SExpr of appropriate type with all kids missing
+childless(p::PrimFunc) = TypedSExpr(p,[Missing{T}() for T in p.argtypes])
+
 ## Primitive Functions
 ## ==================
 BasicTypes = (Float64, Int, Bool)
+NumberTypes = (Float64, Int)
 
 # Integer Primitives
 plus = PrimFunc(:+,[Int, Int],Int)
@@ -13,6 +21,12 @@ plusfloat = PrimFunc(:+,[Float64, Float64],Float64)
 minusfloat = PrimFunc(:-,[Float64, Float64],Float64)
 timesfloat = PrimFunc(:*,[Float64, Float64], Float64)
 quotientfloat = PrimFunc(:/,[Float64, Float64], Float64)
+
+# Inequalities
+gtprim = [PrimFunc(:>, [T,T], Bool) for T in NumberTypes]
+gteprim = [PrimFunc(:>=, [T,T], Bool) for T in NumberTypes]
+ltprim = [PrimFunc(:<, [T,T], Bool) for T in NumberTypes]
+lteprim = [PrimFunc(:<=, [T,T], Bool) for T in NumberTypes]
 
 # Bool
 and = PrimFunc(:&,[Bool, Bool],Bool)
@@ -45,4 +59,5 @@ restprims = [PrimFunc(:rest, [Vector{T}], Vector{T}) for T in BasicTypes]
 arithprims =
   vcat(plus,minus,times,quotient,plusfloat,minusfloat,timesfloat,quotientfloat,
      and,or,not,ites,int2float,bool2float,float2int,bool2int,float2bool,int2bool,
-     firstprims,secondprims,lastprims,restprims)
+     firstprims,secondprims,lastprims,restprims,
+     gteprim, gtprim, lteprim, ltprim)

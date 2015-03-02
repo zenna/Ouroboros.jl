@@ -1,33 +1,31 @@
 ## General Procedurs For Learning
 ## =============================
 
-# Play an MDP with a policy
+@doc """
+Play an MDP with a policy
+Iteratively 1) get action from policy in state 2) act 3) update state
+""" ->
 function play{T<:MDP}(mdp::T,s,policy; niters = 10)
   i = 1
   rewards = Float64[]
   while s != StopState{T} && i < niters
     try
-#       print("\n")
-#       @show policy
-#       @show s
+      lens(:pre_action, policy=policy, state=s)
       action = call(policy,s)
-      window(:state,policy)
-#       @show action
-#       @show expr(policy)
       state,reward = act!(mdp, action)
+      lens(:post_action, state=state, reward=reward)
       push!(rewards,reward)
     catch e
-#       e.msg != "cannot compile with missing values" && @show e
-      isa(e,MethodError) && rethrow(e)
+#       rethrow(e)
+#       isa(e, MethodError) && rethrow(e)
       # If you fail, do a no_action
       state,reward = act!(mdp, no_action(T))
       push!(rewards,reward)
     end
     i += 1
   end
-#   @show rewards
   rewards
 end
 
 include("learn/hillclimb.jl")
-include("learn/VOMM.jl")
+include("learn/markovmodel.jl")

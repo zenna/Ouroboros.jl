@@ -7,7 +7,20 @@ missing(ts::TypedSExpr,t::DataType) = walk(n->valuetype(n)==t && ismissing(n),ts
 # Maps an TypedSExpr to the id of all the missing nodes
 missingprim = PrimFunc(:missing,[TypedSExpr], Vector{Loc})
 missingtypedprim = PrimFunc(:missing, [TypedSExpr,DataType], Vector{Loc})
+
+# Randomly select a function of the same type as value
+function genmissing(node)
+  vt = valuetype(node)
+  Missing{vt}()
+end
 genmissingprim = PrimFunc(:genmissing,[Any],Any)
+
+## Created a TypedExpression from a primitive function
+## WHich has all missing children
+gentypedsexpr(p::PrimFunc) = TypedSExpr(p,[Missing{T}() for T in p.argtypes])
+gentypedsexprprim = PrimFunc(:gentypedsexpr,[PrimFunc],TypedSExpr)
+
+valuetypeprim = PrimFunc(:valuetype,[Any],DataType)
 
 # Get all locations
 alllocs(ts::TypedSExpr) = walk(n->true, ts)
@@ -83,10 +96,5 @@ end
 
 randfprim = PrimFunc(:randf,[Any],Any)
 
-# Randomly select a function of the same type as value
-function genmissing(node)
-  vt = valuetype(node)
-  Missing{vt}()
-end
 
 
