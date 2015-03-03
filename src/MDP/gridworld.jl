@@ -81,6 +81,13 @@ function gen2drand()
   GridWorld{2}(tenboard, [0,0], x->1-landscape(x), noobs)
 end
 
+function ndgenrand(n::Int,lb::Int,ub::Int)
+  board = repmat([lb,ub],1,n)
+  no_obs = Array(Int,0,0)
+  landscape = rand_select([rastrigin,rosenbrock,sphere])
+  GridWorld{n}(board, zeros(Int,n), x->1-landscape(x), no_obs)
+end
+
 function gen2drast()
   tenboard = [0 0
             10 10]

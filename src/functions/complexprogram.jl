@@ -35,16 +35,6 @@ end
 
 export updatecmplx
 
-## Randomly add primitive function to the node
-begin
-  local n1 = TypedSExpr(bodyprim,[progvar])
-  local n2 = TypedSExpr(missingprim, [n1])
-  local n3 = TypedSExpr(rand_selectprims[Loc],[n2])
-  local n4 = TypedSExpr(genapplyprim([updatecmplx,progvar,n3,randfprim]),
-                        [updatecmplx,progvar,n3,randfprim])
-  randaddf = Lambda(:randaddf,[progvar], n4)
-end
-
 ## Randomly remove a subtree
 begin
   local n1 = TypedSExpr(bodyprim,[progvar])
@@ -61,7 +51,7 @@ export randrmnodecmplx
 begin
   local f = Var(:f, PrimFunc)
   local n1 = TypedSExpr(bodyprim,[progvar])
-  local n2 = TypedSExpr(valuetypeprim,[progvar])
+  local n2 = TypedSExpr(valuetypeprim,[f])
   local n3 = TypedSExpr(missingtypedprim, [n1,n2])
   local n4 = TypedSExpr(gentypedsexprprim, [f])
   local n5 = TypedSExpr(rand_selectprims[Loc], [n3])

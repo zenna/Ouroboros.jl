@@ -12,8 +12,8 @@ transformations.
 - `MDPType` should be the type of the constructed mdp
 - `primtransforms` are program transformations used to modify a policy
 """ ->
-function learn{T<:MDP}(gen_mdp::Function, primtransforms::Vector{Lambda},
-                       blackbox = hillclimb, MDPType::Type{T}; args...)
+function bblearn{T<:MDP}(gen_mdp::Function, primtransforms::Vector{Lambda},
+                       MDPType::Type{T}; blackbox::Function = hillclimb, args...)
   s0 = empty_lambda(MDPType) #Creates an empty policy of right type
   score(policy) = (mdp = gen_mdp(); s0 = randinit!(mdp); sum(play(mdp,s0,policy)))
   blackbox(s0,primtransforms,score;args...)

@@ -15,5 +15,6 @@ function empty_lambda{T<:MDP}(MDPType::Type{T})
 end
 
 
+include("MDP/play.jl")
 include("MDP/gridworld.jl")
 include("MDP/ale.jl")

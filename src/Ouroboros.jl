@@ -14,9 +14,6 @@ if VERSION < v"0.4.0-dev"
     using Docile
 end
 
-export
-  learn
-
 include("common.jl")
 include("typedsexpr.jl")
 
@@ -29,6 +26,8 @@ include("functions/primarith.jl")
 include("functions/primprogram.jl")
 include("functions/complexprogram.jl")
 include("vis.jl")
+
+include("optimization/hillclimb.jl")
 include("learn.jl")
 
 # Planners
